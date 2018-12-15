@@ -1,0 +1,323 @@
+
+一：查询————————————————————————————————————————————————————————
+
+1：查看表的结构
+	基本表结构：describe 表名；
+	详细表结构：show create table 表名；
+2：修改表
+	修改表名字：alter table 旧表名 rename 新表名
+	修改字段：alter table 表名 change 旧字段名 新字段名 新数据类型
+	增加字段：alter table 表名 add 字段名1 数据类型 （完整约束性条件） first；
+	删除字段：alter table 表名 drop 字段名
+3：删除表
+	drop table 表名；
+
+4：查询
+	所有字段：select * from 表名；	
+	指定字段：select 字段1 字段2 .... from 表名；
+	where：select 字段 from 表名 where 条件；
+	in：select 字段 from 表名 where 字段【not】in（元素1，元素2）   eg：select * from student where age in（22，23）；
+	between：eg： select * from student where age [not] between 22 and 23;
+	模糊查询：eg：select * from student where name like '张三'; 只查张三
+		eg：select * from student where name like '张三_'; 查询张三？ 只查三个字的 一个 ‘_’ 一个字
+		eg：select * from student where name like '张三%';查询张三。。 前两个字是张三，后面任意什么都查询
+		eg：select * from student where name like '%张三%'; 字符串包含张三的都查询
+	空值查询：eg：select * from student where age is [not] null;
+	多值查询：AND eg：select * from student where name=？ and age=？;
+		OR    eg：select * from student where name=？ or age=？;
+	去重复： eg： select distinct 字段名 from 表名;
+	对查询结果排序： select 字段1，字段2，... from 表名 order by 属性名[asc/desc]
+	
+	分组查询：1.结合group_concat()  eg:select gradeName,group_concat(stuName) from student group by gradeName;所有的名字分组
+		2.结合count(); eg:select gradeName,count(stuName) from student group by gradeName; 名字的个数
+		3.结合having   eg：select gradeName,count(stuName) from student group by gradeName having count(stuName)>3;数据大于3的输出
+		4.结合with rolluo eg: select gradeName,count(stuName) from student group by gradeName with rollup; 最后多加一行 叠加上面的数据
+	
+	limit： eg： select * from 表名 limit 初始位置，个数；
+
+5：使用聚合函数查询
+   	1.count() 2.sun() 3.avg() 4.max() 5.min()
+6:使用连接查询
+	1.内连接查询，是一种最常用的连接查询，内链接查询可以查询两个或者两个以上的表；（inter）join
+	2.外连接，可以查出一张表的所有信息；select 属性名列表 from 表名1 left/right （outer） join 表名2 on 表名1.属性名=表名2.属性名；
+		左连接查询：可以查询出表名1的所有连接，而表名2中，只能查出匹配的记录
+		SELECT bk.bookName,bk.author,cl.bookTypeName FROM class cl RIGHT JOIN books bk  ON bk.`bookType`=cl.`id`;
+	      ===SELECT bk.bookName,bk.author,cl.bookTypeName FROM books bk' left JOIN class cl  ON bk.`bookType`=cl.`id`;
+		右连接查询：可以查询出表名2的所有连接，而表名1中，只能查出匹配的记录
+		给表简写：SELECT bk.bookName,bk.author,cl.bookTypeName FROM books bk,class cl WHERE bk.`bookType`=cl.`id`;
+
+7：子查询
+  	1：带in关键字的子查询（一个查询语句的条件可能落在另一个select语句的查询结果中）
+		SELECT bk.bookName,bk.price FROM books bk WHERE bk.price IN (SELECT price FROM pricerank);
+	2：带比较运算符的子查询
+		SELECT bk.bookName,bk.price FROM books bk WHERE bk.price >= (SELECT price FROM pricerank WHERE pricelevel="2");
+	3:带exists关键字的子查询
+		SELECT bk.bookName,bk.price FROM books bk WHERE EXISTS (SELECT price FROM pricerank );
+	4：带any关键字的子查询
+		SELECT bk.bookName,bk.price FROM books bk WHERE bk.`price` >= ANY (SELECT price FROM pricerank); 大于最小的
+	5：带all关键字的子查询
+		SELECT bk.bookName,bk.price FROM books bk WHERE bk.`price` >= ALL (SELECT price FROM pricerank);大于最大的
+
+8：合并查询结果
+ 	1：union 将两条查询结果合并到一起，去除重复项目
+		select id from book union select id from textbook；
+	2：union all 将两条查询结果合并到一起，不去出重复
+		select id from book union all select id from textbook；
+
+二：插入————————————————————————————————————————————————————————
+
+第一节：插入数据
+	1：给所有的字段插入数据 insert into 表名 values（。。）；
+	2：给表指定的字段插入数据   insert into 表名（字段名） values（。。）；
+	3：同时插入多条数据 insert into 表名（字段名） values（。。），（。。），（。。）；
+
+第二节：数据更新
+	1：更新一条数据 update 表名 set 属性名=取值，属性名=取值 where 条件表达式；
+	2: 删除一条数据 delete from 表名 where 条件；
+
+三：索引————————————————————————————————————————————————————————
+
+第一节：索引的引入：索引室友数据库表中一列或者多列组合而成，其作用是提高对表中数据的查询速度，类似于图书的目录，方便快速定位，寻找指定内容
+第二节：索引的优点：提高查询速度  缺点：创建和维护索引的时间增加了
+第三节：普通索引：
+	CREATE TABLE iindex(id INT PRIMARY KEY AUTO_INCREMENT,
+		    username VARCHAR(20),
+		    PASSWORD VARCHAR(20),
+		    INDEX(username)
+			);
+	CREATE INDEX hi ON iindex(PASSWORD);	
+	ALTER TABLE iindex ADD INDEX(username);
+	唯一索引：
+	CREATE TABLE iindex1(id INT PRIMARY KEY AUTO_INCREMENT,
+		    username VARCHAR(20),
+		    PASSWORD VARCHAR(20),
+		    UNIQUE INDEX(PASSWORD)
+			);	
+	CREATE UNIQUE INDEX hi ON iindex(PASSWORD);	
+	单列索引：
+	多列索引：
+	CREATE TABLE iindex2(id INT PRIMARY KEY AUTO_INCREMENT,
+		    username VARCHAR(20),
+		    PASSWORD VARCHAR(20),
+		    UNIQUE INDEX(username,PASSWORD)
+			);
+	CREATE UNIQUE INDEX hi ON iindex(PASSWORD,USERNAME);	
+	给索引命名：
+	CREATE TABLE iindex3(id INT PRIMARY KEY AUTO_INCREMENT,
+		    username VARCHAR(20),
+		    PASSWORD VARCHAR(20),
+		    INDEX myindex(username,PASSWORD)
+			);
+第四节：删除索引 DROP INDEX 索引名字 ON iindex;	
+
+四：视图——————————————————————————————————————————————————————————
+**************在单表上创建视图
+1：创建视图
+	CREATE VIEW v1 AS SELECT bookName,price FROM books;
+2：给视图选取的字段命名
+	CREATE VIEW v2(b,p) AS SELECT bookName,price FROM books;
+
+
+**************在多表上创建视图
+1：多表创建视图
+	CREATE VIEW v3 AS SELECT bs.bookName,cs.bookTypeName FROM books bs,class cs WHERE bs.booktype=cs.id;
+
+
+**************查看视图：
+	1.describe 语句查看视图基本信息 DESCRIBE 表名/视图名;
+	2。show table status 语句查看视图基本信息 SHOW TABLE STATUS LIKE "表名/视图名";
+	3.show create view 语句查看视图详细信息 SHOW CREATE VIEW v1;
+	4.在views表中查看视图详细信息
+
+**************修改视图
+	1。CREATE OR REPLACE VIEW v1 AS SELECT bookName,author FROM books;
+  	2.ALTER VIEW v1 AS SELECT * FROM books;
+
+
+**************增删更新
+	1：增
+	INSERT INTO v1 VALUES(NULL,"嘿嘿嘿",90,"嗯嗯",6);
+	2：更新
+	UPDATE v1 SET bookName="厉害了",price=80 WHERE id=6;
+	3：删除数据
+	DELETE FROM v1 WHERE bookType=5;
+	4：删除视图
+	DROP VIEW IF EXISTS v3;DROP VIEW v3;
+
+五：触发器————————————————————————————————————————————————————————
+1：创建与使用触发器
+	执行只有一个执行语句的触发器
+	CREATE TRIGGER addbook AFTER INSERT ON books 
+	FOR EACH ROW 
+		UPDATE booksnum SET num=num+1 WHERE new.bookType=booksnum.id;
+
+	执行有多个执行语句的触发器
+	DELIMITER |
+CREATE TRIGGER addbook1 AFTER DELETE ON books 
+	FOR EACH ROW 
+	BEGIN
+		UPDATE booksnum SET num=num-1 WHERE old.bookType=booksnum.id;
+		INSERT INTO inform VALUES(NULL,"删除了一条信息");
+	END
+	| DELIMITER;
+
+
+六：函数—————————————————————————————————————————————————————————————
+1：日期函数：SELECT CURDATE(),CURTIME(),MONTH(时间) FROM books;	
+略
+
+七：存储过程和函数的引用————————————————————————————————————————————————
+ 1：创建存储过程
+	DELIMITER &&
+	CREATE PROCEDURE probook(IN bT INT,OUT count_num INT)
+	READS SQL DATA
+	BEGIN
+		SELECT COUNT(*) FROM booksnum WHERE bookType=bT;
+	END
+&& DELIMITER;
+CALL probook(1,@total);//total 全局变量   call 过程名（输入变量赋值，规定输出变量要求）；
+
+2：创建存储函数
+	SET GLOBAL log_bin_trust_function_creators = 1;//mysql默认不允许创建函数  所有需要这个设置
+	DELIMITER &&
+	CREATE FUNCTION bookfut(booktype INT)
+		RETURNS VARCHAR(20)
+		BEGIN
+			RETURN (SELECT bookName FROM books WHERE id=booktype);
+		END
+&& DELIMITER;
+SELECT bookfut(2);
+
+
+八：定义变量和游标——————————————————————————————————————————————————————
+1：定义变量
+	DECLARE a,b VARCHAR(20) ;
+2：给变量赋值
+	DELIMITER &&
+	CREATE PROCEDURE tuser()
+	BEGIN
+		DECLARE a,b VARCHAR(20) ;
+		SET a='aa2',b='1123';//赋值
+		SELECT username,PASSWORD INTO a,b FROM t_use WHERE id=1;//从其它表选数据赋值给ab
+		INSERT INTO t_user VALUES(NULL,a,b);
+	END
+	&&
+	DELIMITER ;
+	CALL tuser();//一定要调用过程才有影响
+3：定义游标和使用
+	CREATE PROCEDURE tuser4()
+	BEGIN
+		DECLARE a,b VARCHAR(20) ;
+		DECLARE cursor1 CURSOR FOR SELECT username,PASSWORD FROM tuser;//定义游标
+		OPEN cursor1;//打开游标
+		FETCH cursor1 INTO a,b;
+		INSERT INTO t_user VALUES(NULL,a,b);
+		CLOSE cursor1;//一定要关闭游标
+	END
+	&&
+	DELIMITER ;
+	CALL tuser4();
+
+九：流程控制的使用——————————————————————————————————————————————————————
+1：if语句
+	DELIMITER &&
+	CREATE PROCEDURE tuser6(IN a INT)
+	BEGIN	
+		IF a=1 THEN UPDATE t_user SET username="hunao",PASSWORD="6666" WHERE id=4;
+		ELSE INSERT INTO t_user VALUES(NULL,"shibai","4444");
+		END IF;
+	END
+	&&
+	DELIMITER ;
+	CALL tuser6(2);
+
+2：case语句
+	DELIMITER &&
+	CREATE PROCEDURE tuser6(IN a INT)
+	BEGIN	
+		CASE
+			WHEN a>1 THEN ...; 
+			WHEN a<1 THEN ...;
+		ELSE INSERT INTO t_user VALUES(NULL,"shibai","4444");
+		END CASE;
+	END
+	&&
+	DELIMITER ;
+
+3：loop，leave语句
+  loop是循环，遇到leave跳出循环
+	DELIMITER &&
+	CREATE PROCEDURE tuser7(IN num INT)
+	BEGIN	
+	DECLARE a,b VARCHAR(20);
+	myinsert:LOOP  //这里的myinsert是自己命名的loop名称
+		SET num=num-1;
+		IF num=0 THEN LEAVE myinsert;//结束标志都要写名称
+		ELSE SELECT username,PASSWORD INTO a,b FROM t_user WHERE id=num;
+		INSERT INTO tuser VALUES(NULL,a,b);
+		END IF;
+	END LOOP myinsert;//结束标志都要写名称
+	END
+	&&
+	DELIMITER ;
+	CALL tuser7(5);
+
+4：iterate语句
+也是用来跳出循环的语句，但不是终止循环，而是跳出这一次循环，进入下一次循环
+	DELIMITER &&
+	CREATE PROCEDURE tuser8(IN num INT)
+	BEGIN	
+	DECLARE a,b VARCHAR(20);
+	myinsert:LOOP
+		SET num=num-1;
+		IF num=0 THEN LEAVE myinsert;
+		ELSEIF num=2 THEN ITERATE myinsert;//跳出 num=2的循环 进入num=1的循环
+		ELSE SELECT username,PASSWORD INTO a,b FROM t_user WHERE id=num;
+		INSERT INTO tuser VALUES(NULL,a,b);
+		END IF;
+	END LOOP myinsert;
+	END
+	&&
+	DELIMITER ;
+	CALL tuser8(5);
+
+5：repeat语句
+也是循环语句，until到指定条件跳出循环
+	DELIMITER &&
+	CREATE PROCEDURE tuser9(IN num INT)
+	BEGIN	
+	DECLARE a,b VARCHAR(20);
+	myinsert:REPEAT
+		SELECT username,PASSWORD INTO a,b FROM t_user WHERE id=num;
+		INSERT INTO tuser VALUES(num,a,b);
+		SET num=num-1;
+		UNTIL num=0 END REPEAT myinsert;
+	END
+	&&
+	DELIMITER ;
+	CALL tuser9(8);
+
+6:while语句
+	DELIMITER &&
+	CREATE PROCEDURE tuser10(IN num INT)
+	BEGIN	
+	DECLARE a,b VARCHAR(20);
+	myinsert:WHILE num>0 DO
+		SELECT username,PASSWORD INTO a,b FROM t_user WHERE id=num;
+		INSERT INTO tuser VALUES(num,a,b);
+		SET num=num-1;
+		END WHILE myinsert;
+	END
+	&&
+	DELIMITER ;
+	CALL tuser10(8);
+
+
+十：数据备份——————————————————————————————————————————————————————————
+
+///
+Connection conn = DriverManager.getConnection
+					("jdbc:mysql://localhost:3306/tudou?useUnicode=true"
+							+ "&characterEncoding=utf-8"
+							+ "&useSSL=false&allowPublicKeyRetrieval=true"
+							+ "&serverTimezone=GMT", "root", "526904545");

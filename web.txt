@@ -1,0 +1,190 @@
+1.在tomcat的webapps的目录下 创建的所有文件夹都可以在网站里访问  比如 webapps/test     test下面必须有一个文件夹WEB-INF 里面必须有配置文件 web.xml(里面必须有正确的配置信息) 
+   然后再test  不论创建文件还是文件夹  都可以通过    localhost：8080/test/**来访问
+
+
+
+2.servlet 动态页面
+     在webapps/**  创建你的配置文件 创建**/WEB-INF/classes 该目录下放你的javaservlet文件  **/web.xml 配置文件的内容要编写好
+  添加的内容如下
+  <servlet>
+	<servlet-name>随便起个名字</servlet-name>
+	<servlet-class>java文件的class名字</servlet-class>
+</servlet>
+
+<servlet-mapping>
+	<servlet-name>和上面随便起的名字一样</servlet-name>
+	<url-pattern>/随便写个目录  不过在动态访问的时候要写这个目录的名字</url-pattern>
+</servlet-mapping>
+
+
+
+3.Servlet生命周期
+   生命过程： 加载Classloader    -》实例化  new对象  -》初始化 init （ServletConfig）-》处理请求 service doGet doPost-》退出服务 destroy
+只有一个对象
+
+   init（）；第一次初始化的时候只执行一次
+  doGet（）；每一次执行都会执行
+ destroy（）；  shutdown的时候
+
+
+
+
+4.cookie
+   	1.服务器可以向客户端写内容
+   	2.只能是文本内容
+  	3.客户端可以阻止服务器写入
+   	4.只能拿自己webapp写入的东西
+   	5.cookie 分两种 ①写在文件里面的  打开另外的窗口也能访问 presistent
+          		        ②写在内存里面，打开另外的窗口不能访问   关闭窗口 该cookie就永久消失  sesssion
+                6.一个servlet/jsp 设置的cookie能够被同一个路径下面或者子路径下面的servlet/jsp读到 
+
+
+5.session
+    写在服务端的东西，每打开一个网页都会在服务端对应生成sessionid，拥有这个id你就可以访问该页面，不同页面id不同
+
+   ①可以通过cookie实现 ②通过url重写实现
+    如果浏览器支持cookie，创建session的时候会把sessionid保存在cookie里面
+    如果不支持cookie，必须自己编程使用url重写的方式实现session
+      response.encodeURL（）； 转码  URL后面加入SessionId
+
+6.application
+     用于保存整个WebApplication的生命周期内都可以访问的数据   也就是不论谁都能访问，上一次访问的改变 下次访问会接着这个改变开始
+
+7.jsp java server Pages
+拥有servlet的特点与优点（本身就是一个servlet）
+直接在HTML中内嵌JSP代码
+JSP程序由JSP Enging先将它转换成Servlet代码，接着i将他编译成类文件载入执行  只有当客户第一次请求jsp的时候，才需要将其转换。编译
+      优良的性能：优于CGI，PHP，ASP
+      平台无关性：操作系统无关，web服务器无关
+      可扩展性：tag的扩展的机制，简化页面开发
+
+JSP传统语法
+   ***  Declaration 声明：  <%!   这里面写的相当于成员，不在方法内部   %>  <%=     直接输出等号后面的内容    %> 
+
+   ***  Scriptlet   <%  相当于方法内部，可以写任何java程序代码  %>    <%// jsp注释1  %> <%--  jsp注释2   --%> <%/*  jsp注释3 */%>   
+   
+                              jsp注释只有程序源自己可以看见 <!--    html注释 客户端可以看见   -->
+   ***  Directive(编译指令)   
+   ①page   指明与JSP Container的沟通方式     <%@page  language="script language"   %><%@page errorPage="errorPageUrl"   %>
+     <%@page  contentType="contentTypeInfo"   %>    <%@page  import=post/get"   %><%@page   isErrorPage="ture/false"   %>
+   ② include  <%@ include file="url" %>
+   三 taglib
+    <%@Directive  属性=“属性值”     %>	 
+      
+   ***Action(动作指令)再运行期间的命令
+           常见的1：jsp:useBean
+		<jsp:useBean id="**" class="类名">相当于 类名 ** = new 类名（）； 创建名为**的对象
+                            jsp:setProperty 
+		<jsp:setProperty 
+		name="beanName"
+		property="propertyName"/property="*"
+		value="property value"/param="paramName"
+		/>相当于beanName setPropertyName(value)方法调用setXXX()方法
+		
+		<jsp:getProperty
+		name="beanName"
+		property="propertyName"/>相当于调用get方法
+           	            jsp:getProperty
+		jsp:useBean各项参数含义
+ 			一：id对象实例名称
+			二：scope：Bean作用的范围，默认为page，对整个jsp页面有效
+				Scope各项参数的意义：（count++计数为例子）
+					page：仅涵盖使用javaBean的页面 （当前页面，访问代码只有一次，就永远是1，如果两个访问代码，第二个就是2 刷新页面重新生成结果不变）
+					request：有效范围仅限于使用JavaBean的request（用forward的话是同一个request forward过后的网页显示的count是承接之前的count  --
+										而sentRedirect就不是同一个request 之后的网页显示的count是1 ）
+					session：有效范围再用户整个连接过程（可以理解为一个窗口，关闭就断开）整个会话阶段均有效（从1开始刷新一次就加1 一直加 但如果关闭页面再打开 从1开始）
+ 					application：整个应用程序，对整个网站有效（只要tomcat不重启，不管当前页面还是另起页面 count都会一直加）
+			三：class：Bean类名称
+			四：type:Bean实例类型，可以是本类，或其父类，或实现的接口，默认为本类
+
+
+	    2:jsp:inlcude
+		称为文件加载指令，可以将其他文件插入jsp网页，被插入的文件必须保证插入后形成的新文件符合jsp页面的语法规则。
+		其功能：该指令标签作用是在该标签的位置处，静态插入一个文件。
+		<%@page include file="filename"%>
+
+		include动作：
+		起作用是在页面得到请求时动态包含一个文件。
+		功能：当前jsp页面动态包含一个文件，即将当前jsp页面、被包含的文件各自独立编译为字节码文件。
+		当执行到该动态标签处，才加载执行被包含文件的字节码。
+		<jsp:include page="filename"/>
+ 	    3:jsp:forword
+                              <jsp:param>操作被用来以“名-值”对的形式为其他标签提供附加信息。
+它和<jsp:include>、
+                              <jsp:forward>、<jsp:plugin>一起使用，方法如下：
+<jsp:param name=”paramName” value=”paramValue”/>
+                               其中，name为与属性相关联的关键词，value为属性的值。
+           ___________forword和response.sendRedirect的区别
+                           ①都是把客户端访问页面跳转到另外一个页面，forward是客户端request到一个页面，该页面直接跳转到另外一个页面，所以forword所用的request对象是一个对象
+	           ②response.sendRedirect相当于当客户端访问这个页面的时候发送request，这个页面返回给服务端一个信息让他访问另外一个页面
+		。相当于客户端发送了两个request
+	    4:jsp:plugin
+	
+8：jsp最常用的6个内置方法
+    1.out-----	
+ 	println/newline/close/flush/
+	clearBuffer清除缓冲区数据，同时把数据输出到客户端
+	clear清除缓冲区数据，但不把数据输出到客户端
+	getBufferSize返会缓冲区的大小
+    2.request
+ 	? request: javax.servlet. http:HttpServletRequest 的实例，
+	该对象封装了一次请求，客户端的请求参数都被封装在该对象里
+	。这是一个常用的对象，获取客户端请求参数必须使用该对象。
+
+	常用的方法有
+getPararneter(String paramNarne), getPararneterValues(String paramName),
+	 setAttribute(String atttibuteName,Object attributeValue),?
+	getAttribute(String attributeName)和setCharacterEncoding(String env)等。
+
+    3. application:
+	 javax.servlet. ServletContext 的实例，该实例代表JSP 所属的Web 应用本身，
+          	  可用于JSP 页面，或者Servlet 之间交换信息。
+常用的方法有：
+getAttribute(String attNarne) ,?
+	setAttribute(String attNarne , String attValue) 和getInitPararneter(String paramNarne)等。
+ 
+   4. response:
+	 javax.servlet.http.HttpServletResponse 的实例，
+	代表服务器对客户端的响应。通常，也很少使用该对象直接响应
+	，输出响应使用out 对象，而response 对象常用于重定向。
+常用的方法有sendRedirect(j ava.lang.String location)等。
+
+  5.? session:
+	 javax.servlet.http.HttpSession 的实例，
+	该对象代表一次会话。从客户端浏览器与站点建立连接起，开始会话，
+	直到关闭浏览器时结束会话。
+常用的方法有:getAttribute(String attName), 
+	setAttribute(String attName, String attValue)等。
+   6.config: 
+	javax.servlet. ServletConfig 的实例，该实例代表该JSP 的配置信息。事
+	实上， JSP 页面通常无须配置，也就不存在配置信息。因此，
+	该对象更多地在Servlet 中有效。
+常用的方法有getInitPararneter(String paramNarne) 及getInitPararneternarnes() 等方法。
+
+   7. page: 
+  	代表该页面本身，通常没有太大用处。也就是Servlet 中的this 
+	，其类型就是生成的Servlet
+
+? pageContext: javax.servlet.jsp.
+   8.PageContext 
+	的实例，该对象代表该JSP 页面上下文，
+	使用该对象可以访问页面中的共享数据。
+常用的方法有getServletContext()和getServletConfig()等。
+   9.? exception:
+	 java.lang.Throwable 的实例，该实例代表其他页面中的异常和错误。只有当页面是错误处理页面，
+	即编译指令page 的isErrorPage 属性为true 时，该对象才可以使用。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
